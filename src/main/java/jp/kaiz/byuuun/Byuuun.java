@@ -70,7 +70,7 @@ public class Byuuun implements IModGuiFactory {
     }
 
     public void syncConfig() {
-        speed = cfg.getFloat(Byuuun.CATEGORY_SPEED, "speed", speed, 0.0f, 10.0f, "Speed");
+        speed = cfg.getFloat(Byuuun.CATEGORY_SPEED, "speed", 3.0f, 0.0f, 10.0f, "Speed");
         cfg.save();
     }
 
