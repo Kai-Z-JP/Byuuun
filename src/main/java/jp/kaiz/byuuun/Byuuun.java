@@ -1,28 +1,29 @@
 package jp.kaiz.byuuun;
 
-import cpw.mods.fml.client.IModGuiFactory;
-import cpw.mods.fml.client.config.GuiConfig;
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.ModMetadata;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.InputEvent;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.init.SoundEvents;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.IModGuiFactory;
+import net.minecraftforge.fml.client.config.GuiConfig;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Set;
 
-@Mod(modid = Byuuun.MODID, name = Byuuun.NAME, version = Byuuun.VERSION, guiFactory = "jp.kaiz.byuuun.Byuuun")
+@Mod(modid = Byuuun.MODID, name = Byuuun.NAME, version = Byuuun.VERSION, guiFactory = "jp.kaiz.byuuun.Byuuun", clientSideOnly = true)
 public class Byuuun implements IModGuiFactory {
     public static final String MODID = "byuuun";
     public static final String NAME = "Byuuun";
@@ -64,7 +65,7 @@ public class Byuuun implements IModGuiFactory {
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (event.modID.equals(Byuuun.MODID)) {
+        if (event.getModID().equals(Byuuun.MODID)) {
             this.syncConfig();
         }
     }
@@ -78,13 +79,13 @@ public class Byuuun implements IModGuiFactory {
     public void onInput(InputEvent event) {
         if (KEY_TOGGLE.isPressed()) {
             Minecraft minecraft = Minecraft.getMinecraft();
-            EntityClientPlayerMP player = minecraft.thePlayer;
+            EntityPlayerSP player = minecraft.player;
             PlayerCapabilities capabilities = player.capabilities;
 
             capabilities.setFlySpeed((capabilities.getFlySpeed() == 0.05f ? speed : 1) / 20f);
-            player.playSound("random.click", 1.0F, 1.0F);
-            minecraft.ingameGUI.func_110326_a(
-                    "Fly Speed" + EnumChatFormatting.GRAY + ": " + EnumChatFormatting.GREEN + capabilities.getFlySpeed() * 20,
+            player.playSound(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F);
+            minecraft.ingameGUI.setOverlayMessage(
+                    "Fly Speed" + ChatFormatting.GRAY + ": " + ChatFormatting.GREEN + capabilities.getFlySpeed() * 20,
                     false
             );
         }
@@ -96,8 +97,13 @@ public class Byuuun implements IModGuiFactory {
     }
 
     @Override
-    public Class<? extends GuiScreen> mainConfigGuiClass() {
-        return ByuuunConfigGui.class;
+    public boolean hasConfigGui() {
+        return true;
+    }
+
+    @Override
+    public GuiScreen createConfigGui(GuiScreen parentScreen) {
+        return new ByuuunConfigGui(parentScreen);
     }
 
     @Override
@@ -105,14 +111,9 @@ public class Byuuun implements IModGuiFactory {
         return null;
     }
 
-    @Override
-    public IModGuiFactory.RuntimeOptionGuiHandler getHandlerFor(IModGuiFactory.RuntimeOptionCategoryElement element) {
-        return null;
-    }
-
     public static class ByuuunConfigGui extends GuiConfig {
         public ByuuunConfigGui(GuiScreen parentScreen) {
-            super(parentScreen, new ConfigElement<>(Byuuun.cfg.getCategory(Byuuun.CATEGORY_SPEED)).getChildElements(), Byuuun.MODID, false, false, Byuuun.NAME);
+            super(parentScreen, new ConfigElement(Byuuun.cfg.getCategory(Byuuun.CATEGORY_SPEED)).getChildElements(), Byuuun.MODID, false, false, Byuuun.NAME);
         }
     }
 }
